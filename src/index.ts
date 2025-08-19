@@ -14,6 +14,12 @@ type AnalyzeUrlsParams = {
   useGoogleSearch?: boolean;
 };
 
+type GoogleSearchParams = {
+  query: string;
+  instruction?: string;
+  model?: string;
+};
+
 async function callGeminiUrlContext(params: AnalyzeUrlsParams): Promise<string> {
   const apiKey = process.env.GOOGLE_API_KEY;
   if (!apiKey) {
@@ -75,6 +81,71 @@ async function callGeminiUrlContext(params: AnalyzeUrlsParams): Promise<string> 
   return JSON.stringify(json, null, 2);
 }
 
+async function callGoogleSearch(params: GoogleSearchParams): Promise<string> {
+  const apiKey = process.env.GOOGLE_API_KEY;
+  if (!apiKey) {
+    throw new Error("GOOGLE_API_KEY is not set");
+  }
+
+  const model = params.model ?? "gemini-2.5-flash";
+  const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`;
+
+  const promptText = params.instruction
+    ? `${params.instruction}\n\nSearch query: ${params.query}`
+    : `Search the web for information about: ${params.query}`;
+
+  const tools: any[] = [{ google_search: {} }];
+
+  const body = {
+    contents: [
+      {
+        parts: [{ text: promptText }],
+      },
+    ],
+    tools,
+  } as const;
+
+  const response = await fetch(endpoint + `?key=${encodeURIComponent(apiKey)}`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(body),
+  });
+
+  if (!response.ok) {
+    const text = await response.text();
+    throw new Error(`Gemini API error ${response.status}: ${text}`);
+  }
+
+  const json = (await response.json()) as any;
+  // Try to get the primary text output
+  const candidate = json?.candidates?.[0];
+  const textOut = candidate?.content?.parts?.map((p: any) => p?.text).filter(Boolean).join("\n");
+  
+  // Collect grounding metadata for search results
+  const groundingMeta = candidate?.grounding_metadata;
+  const searchQueries = groundingMeta?.web_search_queries || [];
+  const groundingChunks = groundingMeta?.grounding_chunks || [];
+  
+  let sourcesSection = "";
+  if (searchQueries.length > 0) {
+    sourcesSection += "\n\nSearch Queries:\n" + searchQueries.map((q: string) => `- ${q}`).join("\n");
+  }
+  if (groundingChunks.length > 0) {
+    sourcesSection += "\n\nSources (Google Search):\n" +
+      groundingChunks
+        .map((chunk: any) => `- ${chunk.web?.title || "(no title)"}: ${chunk.web?.uri || "(no URL)"})`)
+        .join("\n");
+  }
+
+  if (textOut) {
+    return textOut + sourcesSection;
+  }
+  // Fallback: return raw JSON if text not found
+  return JSON.stringify(json, null, 2);
+}
+
 async function main(): Promise<void> {
   const server = new Server(
     {
@@ -125,6 +196,29 @@ async function main(): Promise<void> {
         required: ["urls"],
       },
     },
+    {
+      name: "google_search",
+      description:
+        "Search the web using Google Search grounding via Gemini API. Provides search results with sources and citations.",
+      inputSchema: {
+        type: "object",
+        properties: {
+          query: {
+            type: "string",
+            description: "Search query to find information on the web",
+          },
+          instruction: {
+            type: "string",
+            description: "Optional instruction for processing search results",
+          },
+          model: {
+            type: "string",
+            description: "Gemini model id (e.g., gemini-2.5-flash)",
+          },
+        },
+        required: ["query"],
+      },
+    },
   ];
 
   server.setRequestHandler(ListToolsRequestSchema, async () => ({ tools }));
@@ -159,6 +253,26 @@ async function main(): Promise<void> {
         instruction,
         model,
         useGoogleSearch: Boolean(use_google_search),
+      });
+      return { content: [{ type: "text", text }] };
+    }
+    if (name === "google_search") {
+      const {
+        query,
+        instruction,
+        model,
+      } = (args ?? {}) as {
+        query?: string;
+        instruction?: string;
+        model?: string;
+      };
+      if (!query || typeof query !== "string" || query.trim() === "") {
+        throw new Error("'query' must be provided as a non-empty string");
+      }
+      const text = await callGoogleSearch({
+        query: query.trim(),
+        instruction,
+        model,
       });
       return { content: [{ type: "text", text }] };
     }
