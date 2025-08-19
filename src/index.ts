@@ -76,10 +76,17 @@ async function callGeminiUrlContext(params: AnalyzeUrlsParams): Promise<string> 
 }
 
 async function main(): Promise<void> {
-  const server = new Server({
-    name: "URL-Context-MCP",
-    version: "1.0.0",
-  });
+  const server = new Server(
+    {
+      name: "URL-Context-MCP",
+      version: "1.0.0",
+    },
+    {
+      capabilities: {
+        tools: {},
+      },
+    }
+  );
 
   const tools: Tool[] = [
     {
