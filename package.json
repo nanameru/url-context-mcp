@@ -1,15 +1,26 @@
 {
-  "name": "url-context-mcp",
+  "name": "gpt-5-plan-mcp",
   "version": "1.0.0",
   "main": "build/index.js",
   "type": "module",
-  "scripts": {
-    "build": "tsc && chmod 755 build/index.js",
-    "test": "echo \"no tests\" && exit 0"
+  "bin": {
+    "my-mcp-server": "./build/index.js"
   },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "tsc && chmod 755 build/index.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "files": [
+    "build"
+  ],
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.17.3",
-    "dotenv": "^17.2.1"
+    "dotenv": "^17.2.1",
+    "openai": "^5.12.2"
   },
   "devDependencies": {
     "@types/node": "^24.3.0",
