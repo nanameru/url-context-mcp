@@ -2,6 +2,8 @@
 
 The URL-Context-MCP MCP Server provides a tool to analyze and summarize the content of URLs using Google Gemini's URL Context capability via the Gemini API.
 
+Now also supports optional grounding with Google Search alongside URL Context.
+
 ## Installation
 
 ### Prerequisites
@@ -49,6 +51,20 @@ Create `.cursor/mcp.json` at your repository root.
     - urls: string | string[] (1-20 total)
     - instruction?: string
     - model?: string (default: gemini-2.5-flash)
+    - use_google_search?: boolean (default: false) — enable grounding with Google Search in addition to URL Context
+
+### Example invocation (MCP tool call)
+
+```json
+{
+  "name": "analyze_urls",
+  "arguments": {
+    "urls": "https://note.com/hawk735/n/nbc585d0774df",
+    "instruction": "日本語で、要約・キーファクト・引用URLを簡潔に",
+    "use_google_search": true
+  }
+}
+```
 
 ## Troubleshooting
 - 401 auth errors: verify `GOOGLE_API_KEY`
@@ -58,4 +74,4 @@ Create `.cursor/mcp.json` at your repository root.
 ## References
 - [Model Context Protocol Quickstart](https://modelcontextprotocol.io/quickstart/server)
 - [MCP SDK Docs](https://modelcontextprotocol.io/docs/sdk)
-- [Gemini API URL context](https://t.co/8il127XZGO)
+- [Gemini API URL context](https://ai.google.dev/gemini-api/docs/url-context)
