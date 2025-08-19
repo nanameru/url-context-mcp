@@ -73,11 +73,16 @@ async function main(): Promise<void> {
         type: "object",
         properties: {
           urls: {
-            type: "array",
-            description: "List of URLs to analyze (max 20)",
-            items: { type: "string" },
-            minItems: 1,
-            maxItems: 20,
+            description: "One URL string or an array of URLs (max 20)",
+            oneOf: [
+              { type: "string" },
+              {
+                type: "array",
+                items: { type: "string" },
+                minItems: 1,
+                maxItems: 20,
+              },
+            ],
           },
           instruction: {
             type: "string",
@@ -98,9 +103,21 @@ async function main(): Promise<void> {
   server.setRequestHandler(CallToolRequestSchema, async (req) => {
     const { name, arguments: args } = req.params;
     if (name === "analyze_urls") {
-      const { urls, instruction, model } = (args ?? {}) as Partial<AnalyzeUrlsParams>;
-      if (!Array.isArray(urls) || urls.length === 0) {
-        throw new Error("'urls' must be a non-empty array");
+      const {
+        urls: rawUrls,
+        instruction,
+        model,
+      } = (args ?? {}) as { urls?: string | string[]; instruction?: string; model?: string };
+      const urls = Array.isArray(rawUrls)
+        ? rawUrls
+        : typeof rawUrls === "string"
+        ? [rawUrls]
+        : [];
+      if (urls.length === 0) {
+        throw new Error("'urls' must be provided as a string or a non-empty array");
+      }
+      if (urls.length > 20) {
+        throw new Error("Maximum of 20 URLs supported");
       }
       const text = await callGeminiUrlContext({
         urls,
