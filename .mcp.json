@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "URL-Context-MCP": {
+      "command": "node",
+      "args": ["/Users/kimurataiyou/url-context-mcp/build/index.js"],
+      "env": { "GOOGLE_API_KEY": "sk-REPLACE_ME" },
+      "autoStart": true
+    }
+  }
+}
+
+
