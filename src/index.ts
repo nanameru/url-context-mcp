@@ -11,6 +11,7 @@ type AnalyzeUrlsParams = {
   urls: string[];
   instruction?: string;
   model?: string;
+  useGoogleSearch?: boolean;
 };
 
 async function callGeminiUrlContext(params: AnalyzeUrlsParams): Promise<string> {
@@ -26,13 +27,18 @@ async function callGeminiUrlContext(params: AnalyzeUrlsParams): Promise<string> 
     ? `${params.instruction}\n\nAnalyze these URLs:\n${params.urls.join("\n")}`
     : `Analyze these URLs and provide a concise, well-structured summary, key facts, and citations:\n${params.urls.join("\n")}`;
 
+  const tools: any[] = [{ url_context: {} }];
+  if (params.useGoogleSearch) {
+    tools.push({ google_search: {} });
+  }
+
   const body = {
     contents: [
       {
         parts: [{ text: promptText }],
       },
     ],
-    tools: [{ url_context: {} }],
+    tools,
   } as const;
 
   const response = await fetch(endpoint + `?key=${encodeURIComponent(apiKey)}`, {
@@ -52,9 +58,20 @@ async function callGeminiUrlContext(params: AnalyzeUrlsParams): Promise<string> 
   // Try to get the primary text output
   const candidate = json?.candidates?.[0];
   const textOut = candidate?.content?.parts?.map((p: any) => p?.text).filter(Boolean).join("\n");
+  // Collect URL context metadata for transparency if present
+  const urlMeta: Array<{ retrieved_url?: string; url_retrieval_status?: string }> |
+    undefined = candidate?.url_context_metadata?.url_metadata;
+  const sourcesSection = Array.isArray(urlMeta) && urlMeta.length > 0
+    ? "\n\nSources (URL Context):\n" +
+      urlMeta
+        .map((m) => `- ${m.retrieved_url ?? "(unknown)"} [${m.url_retrieval_status ?? ""}]`)
+        .join("\n")
+    : "";
+
   if (textOut) {
-    return textOut;
+    return textOut + sourcesSection;
   }
+  // Fallback: return raw JSON if text not found
   return JSON.stringify(json, null, 2);
 }
 
@@ -92,6 +109,11 @@ async function main(): Promise<void> {
             type: "string",
             description: "Gemini model id (e.g., gemini-2.5-flash)",
           },
+          use_google_search: {
+            type: "boolean",
+            description:
+              "Enable grounding with Google Search (adds google_search tool alongside URL context)",
+          },
         },
         required: ["urls"],
       },
@@ -107,7 +129,13 @@ async function main(): Promise<void> {
         urls: rawUrls,
         instruction,
         model,
-      } = (args ?? {}) as { urls?: string | string[]; instruction?: string; model?: string };
+        use_google_search,
+      } = (args ?? {}) as {
+        urls?: string | string[];
+        instruction?: string;
+        model?: string;
+        use_google_search?: boolean;
+      };
       const urls = Array.isArray(rawUrls)
         ? rawUrls
         : typeof rawUrls === "string"
@@ -123,6 +151,7 @@ async function main(): Promise<void> {
         urls,
         instruction,
         model,
+        useGoogleSearch: Boolean(use_google_search),
       });
       return { content: [{ type: "text", text }] };
     }
