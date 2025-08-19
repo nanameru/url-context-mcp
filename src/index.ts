@@ -1,0 +1,125 @@
+import "dotenv/config";
+import { Server } from "@modelcontextprotocol/sdk/server/index.js";
+import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+import {
+  CallToolRequestSchema,
+  ListToolsRequestSchema,
+  Tool,
+} from "@modelcontextprotocol/sdk/types.js";
+
+type AnalyzeUrlsParams = {
+  urls: string[];
+  instruction?: string;
+  model?: string;
+};
+
+async function callGeminiUrlContext(params: AnalyzeUrlsParams): Promise<string> {
+  const apiKey = process.env.GOOGLE_API_KEY;
+  if (!apiKey) {
+    throw new Error("GOOGLE_API_KEY is not set");
+  }
+
+  const model = params.model ?? "gemini-2.5-flash";
+  const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`;
+
+  const promptText = params.instruction
+    ? `${params.instruction}\n\nAnalyze these URLs:\n${params.urls.join("\n")}`
+    : `Analyze these URLs and provide a concise, well-structured summary, key facts, and citations:\n${params.urls.join("\n")}`;
+
+  const body = {
+    contents: [
+      {
+        parts: [{ text: promptText }],
+      },
+    ],
+    tools: [{ url_context: {} }],
+  } as const;
+
+  const response = await fetch(endpoint + `?key=${encodeURIComponent(apiKey)}`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(body),
+  });
+
+  if (!response.ok) {
+    const text = await response.text();
+    throw new Error(`Gemini API error ${response.status}: ${text}`);
+  }
+
+  const json = (await response.json()) as any;
+  // Try to get the primary text output
+  const candidate = json?.candidates?.[0];
+  const textOut = candidate?.content?.parts?.map((p: any) => p?.text).filter(Boolean).join("\n");
+  if (textOut) {
+    return textOut;
+  }
+  return JSON.stringify(json, null, 2);
+}
+
+async function main(): Promise<void> {
+  const server = new Server({
+    name: "URL-Context-MCP",
+    version: "1.0.0",
+  });
+
+  const tools: Tool[] = [
+    {
+      name: "analyze_urls",
+      description:
+        "Analyze and summarize the content of given URLs using Google Gemini URL Context. Provide an optional instruction and model.",
+      inputSchema: {
+        type: "object",
+        properties: {
+          urls: {
+            type: "array",
+            description: "List of URLs to analyze (max 20)",
+            items: { type: "string" },
+            minItems: 1,
+            maxItems: 20,
+          },
+          instruction: {
+            type: "string",
+            description: "Optional instruction or task description",
+          },
+          model: {
+            type: "string",
+            description: "Gemini model id (e.g., gemini-2.5-flash)",
+          },
+        },
+        required: ["urls"],
+      },
+    },
+  ];
+
+  server.setRequestHandler(ListToolsRequestSchema, async () => ({ tools }));
+
+  server.setRequestHandler(CallToolRequestSchema, async (req) => {
+    const { name, arguments: args } = req.params;
+    if (name === "analyze_urls") {
+      const { urls, instruction, model } = (args ?? {}) as Partial<AnalyzeUrlsParams>;
+      if (!Array.isArray(urls) || urls.length === 0) {
+        throw new Error("'urls' must be a non-empty array");
+      }
+      const text = await callGeminiUrlContext({
+        urls,
+        instruction,
+        model,
+      });
+      return { content: [{ type: "text", text }] };
+    }
+    throw new Error(`Unknown tool: ${name}`);
+  });
+
+  const transport = new StdioServerTransport();
+  await server.connect(transport);
+}
+
+// Avoid stdout logs in STDIO servers
+main().catch((err) => {
+  console.error("Fatal error:", err);
+  process.exit(1);
+});
+
+
