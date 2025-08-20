@@ -18,6 +18,12 @@ Now also supports optional grounding with Google Search alongside URL Context. T
   - Claude CLI one-liner example: shown below
   - Or set it in your shell before launching
 
+### Published Package
+This MCP server is now available as a published npm package: `@nanameru/url-context-mcp`
+- No need to clone the repository locally
+- Can be run directly via `npx @nanameru/url-context-mcp@latest`
+- See setup instructions below for Cursor and Claude Code
+
 ### Build locally
 ```bash
 cd /Users/kimurataiyou/url-context-mcp
@@ -28,7 +34,7 @@ npm run build
 ## Setup: Claude Code (CLI)
 Use this one-line command (replace with your real API key):
 ```bash
-claude mcp add URL-Context-MCP -s user -e GOOGLE_API_KEY="sk-your-real-key" -- $(which node) /Users/kimurataiyou/url-context-mcp/build/index.js
+claude mcp add URL-Context-MCP -s user -e GOOGLE_API_KEY="sk-your-real-key" -- npx @nanameru/url-context-mcp@latest
 ```
 To remove the server from Claude Code:
 ```bash
@@ -41,8 +47,8 @@ Create `.cursor/mcp.json` at your repository root:
 {
   "mcpServers": {
     "URL-Context-MCP": {
-      "command": "node",
-      "args": ["/Users/kimurataiyou/url-context-mcp/build/index.js"],
+      "command": "npx",
+      "args": ["@nanameru/url-context-mcp@latest"],
       "env": { "GOOGLE_API_KEY": "sk-your-real-key" },
       "autoStart": true
     }
@@ -105,7 +111,8 @@ Research + scraping (iterative) example
 ## Troubleshooting
 - 401 auth errors: verify `GOOGLE_API_KEY`
 - Ensure Node 18+
-- Use absolute path to `build/index.js`
+- For npx usage: `npx @nanameru/url-context-mcp@latest` should work without local build
+- For local development: use absolute path to `build/index.js`
 
 ## References
 - [Model Context Protocol Quickstart](https://modelcontextprotocol.io/quickstart/server)
