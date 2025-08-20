@@ -86,6 +86,18 @@ Create `.cursor/mcp.json` at your repository root.
     - model?: string (default: gemini-2.5-flash)
     - use_google_search?: boolean (default: false) — enable grounding with Google Search in addition to URL Context
 
+- research_or_scrape
+  - Behavior:
+    - If `urls` is provided, it always scrapes those URLs (no search)
+    - If `query` is provided (and `urls` is not), it runs iterative research:
+      - Search → scrape top result URLs → evaluate gaps → repeat up to 5 iterations
+  - inputs:
+    - urls?: string | string[] (1-20). When provided, search is skipped and URLs are scraped directly
+    - query?: string. Used when `urls` is not provided
+    - instruction?: string
+    - model?: string (default: gemini-2.5-flash)
+    - max_iterations?: number (1-5, default 5)
+
 ### Example invocation (MCP tool call)
 
 ```json
@@ -95,6 +107,32 @@ Create `.cursor/mcp.json` at your repository root.
     "urls": "https://note.com/hawk735/n/nbc585d0774df",
     "instruction": "日本語で、要約・キーファクト・引用URLを簡潔に",
     "use_google_search": true
+  }
+}
+```
+
+Iterative research example
+```json
+{
+  "name": "research_or_scrape",
+  "arguments": {
+    "query": "最新のNext.js 14のApp Routerのベストプラクティスを調査して",
+    "instruction": "日本語で簡潔に要約・キーファクト・引用URLを提示",
+    "max_iterations": 5
+  }
+}
+```
+
+Direct scraping example
+```json
+{
+  "name": "research_or_scrape",
+  "arguments": {
+    "urls": [
+      "https://example.com/post1",
+      "https://example.com/post2"
+    ],
+    "instruction": "日本語で、要点と引用URLをまとめて"
   }
 }
 ```
