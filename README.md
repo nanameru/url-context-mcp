@@ -50,25 +50,25 @@ npm i
 npm run build
 ```
 
-### Install in Claude Code (one-line)
-Replace secrets with real values.
+## Setup: Claude Code (CLI)
+Use this one-line command (replace with your real API key):
 ```bash
-claude mcp add URL-Context-MCP -s user -e GOOGLE_API_KEY="sk-REPLACE_ME" -- $(which node) /Users/kimurataiyou/url-context-mcp/build/index.js
+claude mcp add URL-Context-MCP -s user -e GOOGLE_API_KEY="sk-your-real-key" -- $(which node) /Users/kimurataiyou/url-context-mcp/build/index.js
 ```
-To remove:
+To remove the server from Claude Code:
 ```bash
 claude mcp remove URL-Context-MCP
 ```
 
-### Configure in Cursor
-Create `.cursor/mcp.json` at your repository root.
+## Setup: Cursor
+Create `.cursor/mcp.json` at your repository root:
 ```json
 {
   "mcpServers": {
     "URL-Context-MCP": {
       "command": "node",
       "args": ["/Users/kimurataiyou/url-context-mcp/build/index.js"],
-      "env": { "GOOGLE_API_KEY": "sk-REPLACE_ME" },
+      "env": { "GOOGLE_API_KEY": "sk-your-real-key" },
       "autoStart": true
     }
   }
