@@ -18,31 +18,6 @@ Now also supports optional grounding with Google Search alongside URL Context. T
   - Claude CLI one-liner example: shown below
   - Or set it in your shell before launching
 
-Examples
-```json
-// .cursor/mcp.json
-{
-  "mcpServers": {
-    "URL-Context-MCP": {
-      "command": "node",
-      "args": ["/Users/kimurataiyou/url-context-mcp/build/index.js"],
-      "env": { "GOOGLE_API_KEY": "sk-your-real-key" },
-      "autoStart": true
-    }
-  }
-}
-```
-
-```bash
-# Claude CLI (replace with your real key)
-claude mcp add URL-Context-MCP -s user -e GOOGLE_API_KEY="sk-your-real-key" -- $(which node) /Users/kimurataiyou/url-context-mcp/build/index.js
-```
-
-```bash
-# Shell export (current terminal session)
-export GOOGLE_API_KEY="sk-your-real-key"
-```
-
 ### Build locally
 ```bash
 cd /Users/kimurataiyou/url-context-mcp
