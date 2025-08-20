@@ -56,6 +56,80 @@ Create `.cursor/mcp.json` at your repository root:
 }
 ```
 
+## Other Clients and Agents
+
+<details>
+<summary>VS Code</summary>
+
+[Install in VS Code](https://insiders.vscode.dev/redirect?url=vscode%3Amcp%2Finstall%3F%7B%22name%22%3A%22URL-Context-MCP%22%2C%22command%22%3A%22npx%22%2C%22args%22%3A%5B%22%40nanameru%2Furl-context-mcp%40latest%22%5D%7D)  
+[Install in VS Code Insiders](https://insiders.vscode.dev/redirect?url=vscode-insiders%3Amcp%2Finstall%3F%7B%22name%22%3A%22URL-Context-MCP%22%2C%22command%22%3A%22npx%22%2C%22args%22%3A%5B%22%40nanameru%2Furl-context-mcp%40latest%22%5D%7D)
+
+Or add via CLI:
+```bash
+code --add-mcp '{"name":"URL-Context-MCP","command":"npx","args":["@nanameru/url-context-mcp@latest"],"env":{"GOOGLE_API_KEY":"sk-your-real-key"}}'
+```
+</details>
+
+<details>
+<summary>Claude Desktop</summary>
+
+Follow the MCP install guide and use the standard config above:
+- Guide: https://modelcontextprotocol.io/quickstart/user
+</details>
+
+<details>
+<summary>LM Studio</summary>
+
+Add MCP Server with:
+- Command: npx
+- Args: ["@nanameru/url-context-mcp@latest"]
+- Env: GOOGLE_API_KEY=sk-your-real-key
+</details>
+
+<details>
+<summary>Goose</summary>
+
+Advanced settings → Extensions → Add custom extension:
+- Type: STDIO
+- Command: npx
+- Args: @nanameru/url-context-mcp@latest
+- Enabled: true
+</details>
+
+<details>
+<summary>opencode</summary>
+
+Example `~/.config/opencode/opencode.json`:
+```json
+{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "url-context-mcp": {
+      "type": "local",
+      "command": [
+        "npx",
+        "@nanameru/url-context-mcp@latest"
+      ],
+      "enabled": true
+    }
+  }
+}
+```
+</details>
+
+<details>
+<summary>Qodo Gen</summary>
+
+Open Qodo Gen (VSCode/IntelliJ) → Connect more tools → + Add new MCP → Paste the standard config JSON → Save.
+</details>
+
+<details>
+<summary>Windsurf</summary>
+
+Follow Windsurf MCP documentation and use the standard config above:
+- Docs: https://docs.windsurf.com/windsurf/cascade/mcp
+</details>
+
 ## Configuration (Env)
 - GOOGLE_API_KEY: Your Gemini API key
 
