@@ -2,7 +2,7 @@
 
 The URL-Context-MCP MCP Server provides a tool to analyze and summarize the content of URLs using Google Gemini's URL Context capability via the Gemini API.
 
-Now also supports optional grounding with Google Search alongside URL Context.
+Now also supports optional grounding with Google Search alongside URL Context. The server is designed to follow prompt-only orchestration: control whether to search or scrape via the instruction text you provide.
 
 ## Installation
 
@@ -86,17 +86,11 @@ Create `.cursor/mcp.json` at your repository root.
     - model?: string (default: gemini-2.5-flash)
     - use_google_search?: boolean (default: false) — enable grounding with Google Search in addition to URL Context
 
-- research_or_scrape
-  - Behavior:
-    - If `urls` is provided, it always scrapes those URLs (no search)
-    - If `query` is provided (and `urls` is not), it runs iterative research:
-      - Search → scrape top result URLs → evaluate gaps → repeat up to 5 iterations
-  - inputs:
-    - urls?: string | string[] (1-20). When provided, search is skipped and URLs are scraped directly
-    - query?: string. Used when `urls` is not provided
-    - instruction?: string
-    - model?: string (default: gemini-2.5-flash)
-    - max_iterations?: number (1-5, default 5)
+### Prompt recipes (prompt-only orchestration)
+- Scraping-only (user provided URLs). Example instruction:
+  - "ユーザーが貼ったこれらのURLのみをURLコンテキストで解析し、要約・キーファクト・引用URLを日本語で提示。外部検索は禁止。取得失敗は明示。"
+- Research with search + scraping, iterative up to 5 rounds. Example instruction:
+  - "以下のテーマを調査。まずGoogle検索で候補を収集し、引用する全URLは必ずURLコンテキストで取得・要約・統合。カバレッジ不十分なら最大5回まで再検索・再収集して補完。日本語で簡潔に要約・キーファクト・引用URLを提示。"
 
 ### Example invocation (MCP tool call)
 
@@ -111,28 +105,24 @@ Create `.cursor/mcp.json` at your repository root.
 }
 ```
 
-Iterative research example
+Scraping-only example
 ```json
 {
-  "name": "research_or_scrape",
+  "name": "analyze_urls",
   "arguments": {
-    "query": "最新のNext.js 14のApp Routerのベストプラクティスを調査して",
-    "instruction": "日本語で簡潔に要約・キーファクト・引用URLを提示",
-    "max_iterations": 5
+    "urls": ["https://example.com/post1", "https://example.com/post2"],
+    "instruction": "ユーザーが貼ったこれらのURLのみをURLコンテキストで解析し、要約・キーファクト・引用URLを日本語で提示。外部検索は禁止。取得失敗は明示。"
   }
 }
 ```
 
-Direct scraping example
+Research + scraping (iterative) example
 ```json
 {
-  "name": "research_or_scrape",
+  "name": "google_search",
   "arguments": {
-    "urls": [
-      "https://example.com/post1",
-      "https://example.com/post2"
-    ],
-    "instruction": "日本語で、要点と引用URLをまとめて"
+    "query": "最新のNext.js 14のApp Routerのベストプラクティス",
+    "instruction": "まずGoogle検索で候補を収集し、引用する全URLは必ずURLコンテキストで取得・要約・統合。カバレッジ不十分なら最大5回まで再検索・再収集して補完。日本語で簡潔に要約・キーファクト・引用URLを提示。"
   }
 }
 ```
