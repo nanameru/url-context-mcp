@@ -19,9 +19,9 @@ Now also supports optional grounding with Google Search alongside URL Context. T
   - Or set it in your shell before launching
 
 ### Published Package
-This MCP server is now available as a published npm package: `@nanameru/url-context-mcp`
+This MCP server is now available as a published npm package: `@taiyokimura/url-context-mcp`
 - No need to clone the repository locally
-- Can be run directly via `npx @nanameru/url-context-mcp@latest`
+- Can be run directly via `npx @taiyokimura/url-context-mcp@latest`
 - See setup instructions below for Cursor and Claude Code
 
 ### Build locally
@@ -34,7 +34,7 @@ npm run build
 ## Setup: Claude Code (CLI)
 Use this one-line command (replace with your real API key):
 ```bash
-claude mcp add URL-Context-MCP -s user -e GOOGLE_API_KEY="sk-your-real-key" -- npx @nanameru/url-context-mcp@latest
+claude mcp add URL-Context-MCP -s user -e GOOGLE_API_KEY="sk-your-real-key" -- npx @taiyokimura/url-context-mcp@latest
 ```
 To remove the server from Claude Code:
 ```bash
@@ -48,7 +48,7 @@ Create `.cursor/mcp.json` at your repository root:
   "mcpServers": {
     "URL-Context-MCP": {
       "command": "npx",
-      "args": ["@nanameru/url-context-mcp@latest"],
+      "args": ["@taiyokimura/url-context-mcp@latest"],
       "env": { "GOOGLE_API_KEY": "sk-your-real-key" },
       "autoStart": true
     }
@@ -61,12 +61,12 @@ Create `.cursor/mcp.json` at your repository root:
 <details>
 <summary>VS Code</summary>
 
-[Install in VS Code](https://insiders.vscode.dev/redirect?url=vscode%3Amcp%2Finstall%3F%7B%22name%22%3A%22URL-Context-MCP%22%2C%22command%22%3A%22npx%22%2C%22args%22%3A%5B%22%40nanameru%2Furl-context-mcp%40latest%22%5D%7D)  
-[Install in VS Code Insiders](https://insiders.vscode.dev/redirect?url=vscode-insiders%3Amcp%2Finstall%3F%7B%22name%22%3A%22URL-Context-MCP%22%2C%22command%22%3A%22npx%22%2C%22args%22%3A%5B%22%40nanameru%2Furl-context-mcp%40latest%22%5D%7D)
+[Install in VS Code](https://insiders.vscode.dev/redirect?url=vscode%3Amcp%2Finstall%3F%7B%22name%22%3A%22URL-Context-MCP%22%2C%22command%22%3A%22npx%22%2C%22args%22%3A%5B%22%40taiyokimura%2Furl-context-mcp%40latest%22%5D%7D)  
+[Install in VS Code Insiders](https://insiders.vscode.dev/redirect?url=vscode-insiders%3Amcp%2Finstall%3F%7B%22name%22%3A%22URL-Context-MCP%22%2C%22command%22%3A%22npx%22%2C%22args%22%3A%5B%22%40taiyokimura%2Furl-context-mcp%40latest%22%5D%7D)
 
 Or add via CLI:
 ```bash
-code --add-mcp '{"name":"URL-Context-MCP","command":"npx","args":["@nanameru/url-context-mcp@latest"],"env":{"GOOGLE_API_KEY":"sk-your-real-key"}}'
+code --add-mcp '{"name":"URL-Context-MCP","command":"npx","args":["@taiyokimura/url-context-mcp@latest"],"env":{"GOOGLE_API_KEY":"sk-your-real-key"}}'
 ```
 </details>
 
@@ -82,7 +82,7 @@ Follow the MCP install guide and use the standard config above:
 
 Add MCP Server with:
 - Command: npx
-- Args: ["@nanameru/url-context-mcp@latest"]
+- Args: ["@taiyokimura/url-context-mcp@latest"]
 - Env: GOOGLE_API_KEY=sk-your-real-key
 </details>
 
@@ -92,7 +92,7 @@ Add MCP Server with:
 Advanced settings → Extensions → Add custom extension:
 - Type: STDIO
 - Command: npx
-- Args: @nanameru/url-context-mcp@latest
+- Args: @taiyokimura/url-context-mcp@latest
 - Enabled: true
 </details>
 
@@ -108,7 +108,7 @@ Example `~/.config/opencode/opencode.json`:
       "type": "local",
       "command": [
         "npx",
-        "@nanameru/url-context-mcp@latest"
+        "@taiyokimura/url-context-mcp@latest"
       ],
       "enabled": true
     }
@@ -185,7 +185,7 @@ Research + scraping (iterative) example
 ## Troubleshooting
 - 401 auth errors: verify `GOOGLE_API_KEY`
 - Ensure Node 18+
-- For npx usage: `npx @nanameru/url-context-mcp@latest` should work without local build
+- For npx usage: `npx @taiyokimura/url-context-mcp@latest` should work without local build
 - For local development: use absolute path to `build/index.js`
 
 ## References
